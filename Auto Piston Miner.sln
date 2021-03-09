@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auto Piston Miner", "Auto Piston Miner.csproj", "{059351DE-5940-4104-8CBF-F745F9DA02F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{059351DE-5940-4104-8CBF-F745F9DA02F0}.Debug|x64.ActiveCfg = Debug|x64
+		{059351DE-5940-4104-8CBF-F745F9DA02F0}.Debug|x64.Build.0 = Debug|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {59E3CFBC-D5B7-4722-9EB0-D6C138F4FC86}
+	EndGlobalSection
+EndGlobal

@@ -18,7 +18,10 @@ I do recommend that you set the minVerticalAltitude to 0.0f when starting out. I
 Then, you can run the script with the following arguments:
 
 start - Starts the mining process 
+
 stop - Pauses the mining process
+
 reset - Resets the drill to it's initial position
+
 
 These can be added to your hotbar or to buttons etc.

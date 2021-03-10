@@ -49,6 +49,13 @@ namespace IngameScript {
         // Total piston length in to chop off from the top
         static float minVerticalAltitude = 0f;
 
+        // Use raycasting with cameras to move the miner closer to the ground faster
+        static bool doRaycasting = true;
+        // For use with raycasting: Distance to be subtracted from camera pos to accomodate for drill size (large drills are 5m in length)
+        static float cameraDistanceOffset = 5f;
+        // Drill approach slowdown factor (lower values make the drill slowdown faster)
+        static float slowdownFactor = 0.1f;
+
         // End of configuration
         // Do not edit anything below this line
 
@@ -73,6 +80,7 @@ namespace IngameScript {
         List<IMyPistonBase> forwardPistons;
         List<IMyPistonBase> downPistons;
         List<IMyShipDrill> drills;
+        List<IMyCameraBlock> cameras;
 
         IMyMotorAdvancedStator rotor;
 
@@ -82,6 +90,7 @@ namespace IngameScript {
             forwardPistons = new List<IMyPistonBase>();
             downPistons = new List<IMyPistonBase>();
             drills = new List<IMyShipDrill>();
+            cameras = new List<IMyCameraBlock>();
 
             IMyBlockGroup minerGroup = GridTerminalSystem.GetBlockGroupWithName(minerGroupName);
 
@@ -138,6 +147,15 @@ namespace IngameScript {
             }
 
             minerGroup.GetBlocksOfType<IMyShipDrill>(drills);
+            if (doRaycasting) {
+                minerGroup.GetBlocksOfType<IMyCameraBlock>(cameras);
+                foreach (IMyCameraBlock camera in cameras) {
+                    camera.EnableRaycast = true;
+                }
+                Echo("Enabled raycasting");
+            }
+            
+
 
             // Set limits on the pistons
             float minLimitPerVertPiston = minVerticalAltitude / (basePistons.Count + downPistons.Count);
@@ -186,6 +204,41 @@ namespace IngameScript {
             foreach(var drill in drills) {
                 drill.Enabled = onOff;
             } 
+        }
+
+        public void DoRaycasting() {
+            if (cameras.Count == 0) {
+                Echo("Unable to raycast (No cameras)");
+                return;
+            }
+            
+            float floorDistance = 50;
+            foreach(IMyCameraBlock camera in cameras) {
+                MyDetectedEntityInfo rayHitInfo = camera.Raycast(camera.AvailableScanRange);
+                if (!rayHitInfo.IsEmpty() && rayHitInfo.HitPosition != null) {
+                    floorDistance = (float) Math.Min(floorDistance, ((Vector3D)rayHitInfo.HitPosition - camera.GetPosition()).Length() - cameraDistanceOffset);
+                }
+            }
+
+            if (floorDistance < 0) floorDistance = 0;
+
+
+            Echo("Detected ground range: " + floorDistance + "m");
+            float targetVelocity = floorDistance * slowdownFactor;
+            if (targetVelocity > downwardsVelocity)
+                SetDownwardsVelocity(targetVelocity);
+            else
+                SetDownwardsVelocity(downwardsVelocity);
+        }
+
+        public void SetDownwardsVelocity(float targetVelocity) {
+            targetVelocity /= (downPistons.Count + basePistons.Count);
+            foreach(IMyPistonBase piston in downPistons) {
+                piston.Velocity = targetVelocity;
+            }
+            foreach(IMyPistonBase piston in basePistons) {
+                piston.Velocity = -targetVelocity;
+            }
         }
 
         public bool IsFullyExtendedDownwards() {
@@ -383,6 +436,11 @@ namespace IngameScript {
             else if (this.currentState == "reset_retracting" && IsDoneRetractingForwards()) {
                 this.currentState = "stopped";
                 PauseMiner();
+            }
+
+            // movingdown => [possibly do raycasting]
+            if (doRaycasting && this.currentState == "movingdown") {
+                DoRaycasting();
             }
             
         }

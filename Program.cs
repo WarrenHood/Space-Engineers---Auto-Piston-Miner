@@ -73,6 +73,7 @@ namespace IngameScript {
         List<IMyPistonBase> forwardPistons;
         List<IMyPistonBase> downPistons;
         List<IMyShipDrill> drills;
+
         IMyMotorAdvancedStator rotor;
 
         string currentState = "stopped";
@@ -303,7 +304,7 @@ namespace IngameScript {
                     totalCap += (double)con.GetInventory().MaxVolume;
                 }
             }
-            totalFreePerc /= totalCap;
+            if (totalCap > 0) totalFreePerc /= totalCap;
 
             if (this.currentState == "paused" && totalFreePerc < startMiningFreePercentage) {
                 fontColor = Color.Red;

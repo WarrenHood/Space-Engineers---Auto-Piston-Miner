@@ -64,7 +64,22 @@ namespace IngameScript {
         // Echo redirection
         public bool firstOut = true;
         public void EchoOut(string text) {
+            bool oFirstOut = firstOut;
+            if (textPanels.Count > 0) {
+                string extra = "";
+                if (!firstOut && text.Length != 0) extra = Environment.NewLine;
+                for (int i = 0; i < textPanels.Count; i++) {
+                    IMyTextSurface surface = textPanels[i];
+                    surface.FontColor = fontColor;
+                    surface.ContentType = ContentType.TEXT_AND_IMAGE;
+                    surface.WriteText(extra + text, !firstOut);
+                }
+                
+                firstOut = false;
+            }
+
             if (((IMyTextSurfaceProvider)Me).SurfaceCount > 0) {
+                firstOut = oFirstOut;
                 string extra = "";
                 if (!firstOut && text.Length != 0) extra = Environment.NewLine;
                 IMyTextSurface surface = ((IMyTextSurfaceProvider)Me).GetSurface(0);
@@ -81,6 +96,7 @@ namespace IngameScript {
         List<IMyPistonBase> downPistons;
         List<IMyShipDrill> drills;
         List<IMyCameraBlock> cameras;
+        List<IMyTextPanel> textPanels;
 
         IMyMotorAdvancedStator rotor;
 
@@ -91,6 +107,7 @@ namespace IngameScript {
             downPistons = new List<IMyPistonBase>();
             drills = new List<IMyShipDrill>();
             cameras = new List<IMyCameraBlock>();
+            textPanels = new List<IMyTextPanel>();
 
             IMyBlockGroup minerGroup = GridTerminalSystem.GetBlockGroupWithName(minerGroupName);
 
@@ -99,6 +116,8 @@ namespace IngameScript {
                 Echo("Could not find group with name: " + minerGroupName);
                 return;
             }
+
+            minerGroup.GetBlocksOfType<IMyTextPanel>(textPanels);
 
             List<IMyMotorAdvancedStator> rotors = new List<IMyMotorAdvancedStator>();
             minerGroup.GetBlocksOfType<IMyMotorAdvancedStator>(rotors);
@@ -182,7 +201,7 @@ namespace IngameScript {
                 piston.SetValue<bool>("ShareInertiaTensor", true);
             }
 
-            rotor.SetValue<bool>("ShareInertiaTensor", true);
+            rotor.SetValue<bool>("ShareInertiaTensor", false);
 
             this.currentState = "ready";
         }
